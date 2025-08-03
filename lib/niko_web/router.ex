@@ -18,6 +18,7 @@ defmodule NikoWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
+    post "/", PageController, :select_user
     resources "/groups", GroupController
 
     resources "/users", UserController do
