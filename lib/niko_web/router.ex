@@ -8,6 +8,7 @@ defmodule NikoWeb.Router do
     plug :put_root_layout, html: {NikoWeb.Layouts, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
+    plug NikoWeb.Plugs.SelectUser
   end
 
   pipeline :api do

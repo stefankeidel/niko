@@ -4,12 +4,10 @@ defmodule NikoWeb.PageController do
 
   def home(conn, _params) do
     users = Accounts.list_users()
-    selected_user_id = get_session(conn, :selected_user_id)
-    selected_user = if selected_user_id, do: Accounts.get_user!(selected_user_id), else: nil
 
     # The home page is often custom made,
     # so skip the default app layout.
-    render(conn, :home, users: users, selected_user: selected_user)
+    render(conn, :home, users: users, selected_user: conn.assigns[:current_user])
   end
 
   def select_user(conn, %{"user_id" => user_id}) when user_id != "" do

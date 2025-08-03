@@ -1,26 +1,24 @@
 <header class="px-4 sm:px-6 lg:px-8">
   <div class="flex items-center justify-between border-b border-zinc-100 py-3 text-sm">
     <div class="flex items-center gap-4">
-      <a href="/">
-        <img src={~p"/images/logo.svg"} width="36" />
-      </a>
-      <p class="bg-brand/5 text-brand rounded-full px-2 font-medium leading-6">
-        v{Application.spec(:phoenix, :vsn)}
-      </p>
+      <!-- Noop -->
     </div>
     <div class="flex items-center gap-4 font-semibold leading-6 text-zinc-900">
-      <a href="https://twitter.com/elixirphoenix" class="hover:text-zinc-700">
-        @elixirphoenix
-      </a>
-      <a href="https://github.com/phoenixframework/phoenix" class="hover:text-zinc-700">
-        GitHub
-      </a>
-      <a
-        href="https://hexdocs.pm/phoenix/overview.html"
-        class="rounded-lg bg-zinc-100 px-2 py-1 hover:bg-zinc-200/80"
-      >
-        Get Started <span aria-hidden="true">&rarr;</span>
-      </a>
+      <%= if assigns[:current_user] do %>
+        <div class="flex items-center gap-3">
+          <span class="text-sm">Welcome, <%= @current_user.display_name %></span>
+          <.link navigate={~p"/users/#{@current_user}/edit"} class="text-sm hover:text-zinc-700 underline">
+            Edit Profile
+          </.link>
+          <.link navigate={~p"/"} class="rounded-lg bg-blue-100 px-2 py-1 hover:bg-blue-200/80 text-sm text-blue-700">
+            User Selection
+          </.link>
+        </div>
+        <% else %>
+          <div class="flex items-center gap-4">
+            <span class="text-sm text-zinc-600">No user selected</span>
+          </div>
+          <% end %>
     </div>
   </div>
 </header>
