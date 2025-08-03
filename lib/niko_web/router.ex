@@ -18,6 +18,12 @@ defmodule NikoWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
+    resources "/groups", GroupController
+
+    resources "/users", UserController do
+      post "/groups/add", UserController, :add_group
+      delete "/groups/:group_id", UserController, :remove_group
+    end
   end
 
   # Other scopes may use custom stacks.
