@@ -26,6 +26,10 @@ defmodule NikoWeb.Router do
       post "/groups/add", UserController, :add_group
       delete "/groups/:group_id", UserController, :remove_group
     end
+
+    live "/moods", MoodLive.Index, :index
+    live "/moods/new", MoodLive.Index, :new
+    live "/moods/:id/edit", MoodLive.Index, :edit
   end
 
   # Other scopes may use custom stacks.

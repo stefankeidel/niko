@@ -55,6 +55,8 @@ defmodule NikoWeb do
       use Phoenix.LiveView,
         layout: {NikoWeb.Layouts, :app}
 
+      on_mount NikoWeb.Live.UserAuth
+
       unquote(html_helpers())
     end
   end

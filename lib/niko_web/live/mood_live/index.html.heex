@@ -1,0 +1,42 @@
+<.header>
+  <:actions>
+    <.link patch={~p"/moods/new"}>
+      <.button>New Mood</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.table
+  id="moods"
+  rows={@streams.moods}
+  row_click={fn {_id, mood} -> JS.navigate(~p"/moods/#{mood}") end}
+>
+  <:col :let={{_id, mood}} label="Date">{mood.date}</:col>
+  <:col :let={{_id, mood}} label="Mood">{mood.mood}</:col>
+  <:col :let={{_id, mood}} label="Emojis">{mood.emojis}</:col>
+  <:action :let={{_id, mood}}>
+    <div class="sr-only">
+      <.link navigate={~p"/moods/#{mood}"}>Show</.link>
+    </div>
+    <.link patch={~p"/moods/#{mood}/edit"}>Edit</.link>
+  </:action>
+  <:action :let={{id, mood}}>
+    <.link
+      phx-click={JS.push("delete", value: %{id: mood.id}) |> hide("##{id}")}
+      data-confirm="Are you sure?"
+    >
+      Delete
+    </.link>
+  </:action>
+</.table>
+
+<.modal :if={@live_action in [:new, :edit]} id="mood-modal" show on_cancel={JS.patch(~p"/moods")}>
+  <.live_component
+    module={NikoWeb.MoodLive.FormComponent}
+    id={@mood.id || :new}
+    title={@page_title}
+    action={@live_action}
+    mood={@mood}
+    patch={~p"/moods"}
+  />
+</.modal>
