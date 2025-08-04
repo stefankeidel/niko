@@ -23,11 +23,7 @@
     <%= for day <- 1..@days_in_month do %>
       <% is_weekend = Map.get(@weekend_days, day) %>
       <div class={"calendar-day-header #{if @today.year == @current_year and @today.month == @current_month and @today.day == day, do: "today"} #{if is_weekend, do: "weekend"}"}>
-        <%= if is_weekend do %>
-          🌴 {day}
-        <% else %>
-          {day}
-        <% end %>
+        {day}
       </div>
     <% end %>
     
@@ -45,7 +41,11 @@
         <div class={"calendar-cell #{if mood, do: mood_display_class(mood.mood), else: "bg-gray-50 hover:bg-gray-100"} #{if is_weekend, do: "weekend-cell"}"}>
           <%= if mood do %>
             <div class="mood-content" title={"#{mood.mood} - #{mood.emojis}"}>
-              <span class="mood-emojis">{mood.emojis}</span>
+              <%= if is_weekend do %>
+                <span class="mood-emojis">🌴</span>
+              <% else %>
+                <span class="mood-emojis">{mood.emojis}</span>
+              <% end %>
             </div>
             <div class="mood-actions">
               <.link patch={~p"/moods/#{mood}/edit"} class="edit-link">
@@ -60,17 +60,25 @@
               </.link>
             </div>
           <% else %>
+            <!-- this is the ugliest piece of 💩, but it works :vibe: -->
             <% date_string =
               "#{@current_year}-#{String.pad_leading("#{@current_month}", 2, "0")}-#{String.pad_leading("#{day}", 2, "0")}"
 
             new_mood_path = ~p"/moods/new?user_id=#{user.id}&date=#{date_string}" %>
-            <.link
-              patch={new_mood_path}
-              class="add-mood-link"
-              title="Add mood for #{user.display_name} on #{day}/#{@current_month}"
-            >
-              +
-            </.link>
+
+            <%= if is_weekend do %>
+              <div class="mood-emojis">
+                🌴
+              </div>
+            <% else %>
+              <.link
+                patch={new_mood_path}
+                class="add-mood-link"
+                title="Add mood for #{user.display_name} on #{day}/#{@current_month}"
+              >
+                +
+              </.link>
+            <% end %>
           <% end %>
         </div>
       <% end %>
@@ -146,12 +154,11 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    cursor: pointer;
     transition: all 0.2s;
   }
 
   .calendar-cell:hover {
-    transform: scale(1.02);
+    transform: scale(1.05);
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     filter: brightness(1.1);
   }

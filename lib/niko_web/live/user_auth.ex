@@ -19,7 +19,6 @@ defmodule NikoWeb.Live.UserAuth do
         Ecto.NoResultsError -> nil
       end
 
-    IO.puts("Selected user found: #{inspect(current_user)}")
     {:cont, assign(socket, :current_user, current_user)}
   end
 

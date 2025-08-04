@@ -125,8 +125,6 @@ defmodule NikoWeb.MoodLive.Index do
       end)
       |> Map.new()
 
-    IO.inspect(weekend_days, label: "Weekend Days")
-
     socket
     |> assign(:users, users)
     |> assign(:calendar_data, calendar_data)
