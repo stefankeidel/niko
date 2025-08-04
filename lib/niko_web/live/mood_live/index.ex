@@ -179,15 +179,9 @@ defmodule NikoWeb.MoodLive.Index do
   defp month_name(12), do: "December"
 
   # Helper function to get mood display info
-  def mood_display_class(:awesome), do: "bg-blue-200 text-blue-800"
-  def mood_display_class(:good), do: "bg-green-200 text-green-800"
-  def mood_display_class(:"not-good"), do: "bg-orange-200 text-orange-800"
-  def mood_display_class(:horrible), do: "bg-red-200 text-red-800"
+  def mood_display_class(:awesome), do: "bg-green-500 text-white"
+  def mood_display_class(:good), do: "bg-yellow-500 text-white"
+  def mood_display_class(:"not-good"), do: "bg-orange-500 text-white"
+  def mood_display_class(:horrible), do: "bg-red-500 text-white"
   def mood_display_class(_), do: "bg-gray-100 text-gray-500"
-
-  def mood_display_emoji(:awesome), do: "😄"
-  def mood_display_emoji(:good), do: "😊"
-  def mood_display_emoji(:"not-good"), do: "😕"
-  def mood_display_emoji(:horrible), do: "😞"
-  def mood_display_emoji(_), do: ""
 end

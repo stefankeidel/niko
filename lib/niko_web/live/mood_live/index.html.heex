@@ -42,8 +42,7 @@
         <div class={"calendar-cell #{if mood, do: mood_display_class(mood.mood), else: "bg-gray-50 hover:bg-gray-100"}"}>
           <%= if mood do %>
             <div class="mood-content" title={"#{mood.mood} - #{mood.emojis}"}>
-              <span class="mood-emoji">{mood_display_emoji(mood.mood)}</span>
-              <span class="mood-emojis text-xs">{mood.emojis}</span>
+              <span class="mood-emojis">{mood.emojis}</span>
             </div>
             <div class="mood-actions">
               <.link patch={~p"/moods/#{mood}/edit"} class="edit-link">
@@ -124,7 +123,7 @@
   }
 
   .calendar-cell {
-    background-color: white;
+    /* background-color: white; */
     min-height: 50px;
     padding: 4px;
     position: relative;
@@ -138,7 +137,8 @@
 
   .calendar-cell:hover {
     transform: scale(1.02);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    filter: brightness(1.1);
   }
 
   .mood-content {
@@ -148,16 +148,13 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-  }
-
-  .mood-emoji {
-    font-size: 1.2rem;
-    margin-bottom: 2px;
+    padding: 4px;
   }
 
   .mood-emojis {
-    font-size: 0.75rem;
-    opacity: 0.8;
+    font-size: 1rem;
+    font-weight: 600;
+    color: inherit;
   }
 
   .mood-actions {
