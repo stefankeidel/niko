@@ -16,6 +16,19 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
+  niko:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: niko_web
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: ecto://postgres:postgres@postgres/niko_dev
+      SECRET_KEY_BASE: "DlwmOxs6p4yW0fWKvaWJnm/kyUcaV7kW750x6I4p6Tq+CQO5A3VLjKPxTmWDEK9f"
+    ports:
+      - "4000:4000"
 
 volumes:
   niko_postgres_data:
