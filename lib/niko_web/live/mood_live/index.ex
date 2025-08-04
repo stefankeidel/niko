@@ -21,7 +21,7 @@ defmodule NikoWeb.MoodLive.Index do
       end
 
     socket = assign(socket, :current_user, current_user)
-    {:ok, stream(socket, :moods, Moods.list_moods_by_user(current_user.id))}
+    {:ok, stream(socket, :moods, Moods.list_moods())}
   end
 
   @impl true
