@@ -22,6 +22,21 @@ defmodule Niko.Moods do
   end
 
   @doc """
+  Returns the list of moods for a specific user.
+
+  ## Examples
+
+      iex> list_moods_by_user(123)
+      [%Mood{}, ...]
+
+  """
+  def list_moods_by_user(user_id) do
+    Mood
+    |> where([m], m.user_id == ^user_id)
+    |> Repo.all()
+  end
+
+  @doc """
   Gets a single mood.
 
   Raises `Ecto.NoResultsError` if the Mood does not exist.
