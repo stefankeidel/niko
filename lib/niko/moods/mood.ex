@@ -15,6 +15,6 @@ defmodule Niko.Moods.Mood do
   def changeset(mood, attrs) do
     mood
     |> cast(attrs, [:date, :mood, :emojis, :user_id])
-    |> validate_required([:date, :mood, :emojis, :user_id])
+    |> validate_required([:date, :user_id])
   end
 end
