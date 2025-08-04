@@ -32,6 +32,8 @@ defmodule NikoWeb.MoodLive.Index do
       |> assign(:current_month, current_month)
       |> assign(:current_year, current_year)
       |> assign(:today, today)
+      # Initialize to prevent nil errors
+      |> assign(:weekend_days, %{})
       |> load_calendar_data()
 
     {:ok, socket}
@@ -109,13 +111,28 @@ defmodule NikoWeb.MoodLive.Index do
     moods = get_moods_for_month(month, year)
     calendar_data = build_calendar_data(users, moods)
     days_in_month = Date.days_in_month(Date.new!(year, month, 1))
-    month_name = month_name(month)
+
+    # Use Calendar.strftime for month name
+    date = Date.new!(year, month, 1)
+    month_name = Calendar.strftime(date, "%B")
+
+    # Create weekend info for each day
+    weekend_days =
+      1..days_in_month
+      |> Enum.map(fn day ->
+        date = Date.new!(year, month, day)
+        {day, weekend?(date)}
+      end)
+      |> Map.new()
+
+    IO.inspect(weekend_days, label: "Weekend Days")
 
     socket
     |> assign(:users, users)
     |> assign(:calendar_data, calendar_data)
     |> assign(:days_in_month, days_in_month)
     |> assign(:month_name, month_name)
+    |> assign(:weekend_days, weekend_days)
   end
 
   defp navigate_month(socket, direction) do
@@ -165,18 +182,12 @@ defmodule NikoWeb.MoodLive.Index do
     end)
   end
 
-  defp month_name(1), do: "January"
-  defp month_name(2), do: "February"
-  defp month_name(3), do: "March"
-  defp month_name(4), do: "April"
-  defp month_name(5), do: "May"
-  defp month_name(6), do: "June"
-  defp month_name(7), do: "July"
-  defp month_name(8), do: "August"
-  defp month_name(9), do: "September"
-  defp month_name(10), do: "October"
-  defp month_name(11), do: "November"
-  defp month_name(12), do: "December"
+  # Helper function to determine if a date is a weekend (Saturday or Sunday)
+  defp weekend?(date) do
+    day_of_week = Date.day_of_week(date)
+    # Saturday = 6, Sunday = 7
+    day_of_week == 6 || day_of_week == 7
+  end
 
   # Helper function to get mood display info
   def mood_display_class(:awesome), do: "bg-green-500 text-white"

@@ -21,8 +21,13 @@
     
 <!-- Day headers -->
     <%= for day <- 1..@days_in_month do %>
-      <div class={"calendar-day-header #{if @today.year == @current_year and @today.month == @current_month and @today.day == day, do: "today"}"}>
-        {day}
+      <% is_weekend = Map.get(@weekend_days, day) %>
+      <div class={"calendar-day-header #{if @today.year == @current_year and @today.month == @current_month and @today.day == day, do: "today"} #{if is_weekend, do: "weekend"}"}>
+        <%= if is_weekend do %>
+          🌴 {day}
+        <% else %>
+          {day}
+        <% end %>
       </div>
     <% end %>
     
@@ -36,7 +41,8 @@
 <!-- Mood cells for each day -->
       <%= for day <- 1..@days_in_month do %>
         <% mood = get_in(@calendar_data, [user.id, day]) %>
-        <div class={"calendar-cell #{if mood, do: mood_display_class(mood.mood), else: "bg-gray-50 hover:bg-gray-100"}"}>
+        <% is_weekend = Map.get(@weekend_days, day) %>
+        <div class={"calendar-cell #{if mood, do: mood_display_class(mood.mood), else: "bg-gray-50 hover:bg-gray-100"} #{if is_weekend, do: "weekend-cell"}"}>
           <%= if mood do %>
             <div class="mood-content" title={"#{mood.mood} - #{mood.emojis}"}>
               <span class="mood-emojis">{mood.emojis}</span>
@@ -109,6 +115,18 @@
     font-weight: 700;
   }
 
+  .calendar-day-header.weekend {
+    background-color: #fef3c7;
+    color: #d97706;
+    font-weight: 600;
+  }
+
+  .calendar-day-header.weekend.today {
+    background-color: #bfdbfe;
+    color: #1e40af;
+    font-weight: 700;
+  }
+
   .calendar-user-name {
     background-color: #f9fafb;
     padding: 8px;
@@ -136,6 +154,15 @@
     transform: scale(1.02);
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     filter: brightness(1.1);
+  }
+
+  .weekend-cell {
+    background-color: #fffbeb !important;
+    border: 1px solid #f59e0b;
+  }
+
+  .weekend-cell:hover {
+    background-color: #fef3c7 !important;
   }
 
   .mood-content {
