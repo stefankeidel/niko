@@ -7,6 +7,7 @@ defmodule Niko.MoodsTest do
     alias Niko.Moods.Mood
 
     import Niko.MoodsFixtures
+    import Niko.AccountsFixtures
 
     @invalid_attrs %{date: nil, mood: nil, emojis: nil}
 
@@ -21,12 +22,13 @@ defmodule Niko.MoodsTest do
     end
 
     test "create_mood/1 with valid data creates a mood" do
-      valid_attrs = %{date: ~D[2025-08-03], mood: :horrible, emojis: "some emojis"}
+      user = user_fixture()
+      valid_attrs = %{date: ~D[2025-08-03], mood: :horrible, emojis: "😊", user_id: user.id}
 
       assert {:ok, %Mood{} = mood} = Moods.create_mood(valid_attrs)
       assert mood.date == ~D[2025-08-03]
       assert mood.mood == :horrible
-      assert mood.emojis == "some emojis"
+      assert mood.emojis == "😊"
     end
 
     test "create_mood/1 with invalid data returns error changeset" do
@@ -35,12 +37,12 @@ defmodule Niko.MoodsTest do
 
     test "update_mood/2 with valid data updates the mood" do
       mood = mood_fixture()
-      update_attrs = %{date: ~D[2025-08-04], mood: :"not-good", emojis: "some updated emojis"}
+      update_attrs = %{date: ~D[2025-08-04], mood: :not_good, emojis: "🎉"}
 
       assert {:ok, %Mood{} = mood} = Moods.update_mood(mood, update_attrs)
       assert mood.date == ~D[2025-08-04]
-      assert mood.mood == :"not-good"
-      assert mood.emojis == "some updated emojis"
+      assert mood.mood == :not_good
+      assert mood.emojis == "🎉"
     end
 
     test "update_mood/2 with invalid data returns error changeset" do
@@ -58,6 +60,56 @@ defmodule Niko.MoodsTest do
     test "change_mood/1 returns a mood changeset" do
       mood = mood_fixture()
       assert %Ecto.Changeset{} = Moods.change_mood(mood)
+    end
+
+    test "create_mood/1 with valid emoji lengths" do
+      user = user_fixture()
+
+      # Test single emoji
+      assert {:ok, %Mood{} = mood} =
+               Moods.create_mood(%{date: ~D[2025-08-03], emojis: "😊", user_id: user.id})
+
+      assert mood.emojis == "😊"
+
+      # Test two characters
+      assert {:ok, %Mood{} = mood} =
+               Moods.create_mood(%{date: ~D[2025-08-04], emojis: "Hi", user_id: user.id})
+
+      assert mood.emojis == "Hi"
+
+      # Test empty string (Ecto normalizes empty strings to nil)
+      assert {:ok, %Mood{} = mood} =
+               Moods.create_mood(%{date: ~D[2025-08-05], emojis: "", user_id: user.id})
+
+      assert mood.emojis == nil
+
+      # Test nil
+      assert {:ok, %Mood{} = mood} =
+               Moods.create_mood(%{date: ~D[2025-08-06], emojis: nil, user_id: user.id})
+
+      assert mood.emojis == nil
+    end
+
+    test "create_mood/1 with invalid emoji lengths" do
+      user = user_fixture()
+
+      # Test three characters
+      assert {:error, %Ecto.Changeset{} = changeset} =
+               Moods.create_mood(%{date: ~D[2025-08-03], emojis: "ABC", user_id: user.id})
+
+      assert %{emojis: ["should be at most 2 characters"]} = errors_on(changeset)
+
+      # Test long string
+      assert {:error, %Ecto.Changeset{} = changeset} =
+               Moods.create_mood(%{date: ~D[2025-08-04], emojis: "Hello World", user_id: user.id})
+
+      assert %{emojis: ["should be at most 2 characters"]} = errors_on(changeset)
+
+      # Test multiple emojis (if they exceed 2 characters)
+      assert {:error, %Ecto.Changeset{} = changeset} =
+               Moods.create_mood(%{date: ~D[2025-08-05], emojis: "😊🎉🚀", user_id: user.id})
+
+      assert %{emojis: ["should be at most 2 characters"]} = errors_on(changeset)
     end
   end
 end

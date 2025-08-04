@@ -16,5 +16,6 @@ defmodule Niko.Moods.Mood do
     mood
     |> cast(attrs, [:date, :mood, :emojis, :user_id])
     |> validate_required([:date, :user_id])
+    |> validate_length(:emojis, max: 2, message: "should be at most 2 characters")
   end
 end
