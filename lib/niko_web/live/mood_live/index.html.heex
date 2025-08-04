@@ -30,15 +30,19 @@
 <!-- User rows -->
     <%= for user <- @users do %>
       <!-- User name cell -->
-      <div class="calendar-user-name">
+      <div class={"calendar-user-name #{if @current_user && user.id == @current_user.id, do: "current-user-row"}"}>
         {user.display_name}
+        <%= if @current_user && user.id == @current_user.id do %>
+          <span class="ml-2 text-blue-600 font-semibold">(You)</span>
+        <% end %>
       </div>
       
 <!-- Mood cells for each day -->
       <%= for day <- 1..@days_in_month do %>
         <% mood = get_in(@calendar_data, [user.id, day]) %>
         <% is_weekend = Map.get(@weekend_days, day) %>
-        <div class={"calendar-cell #{if mood, do: mood_display_class(mood.mood), else: "bg-gray-50 hover:bg-gray-100"} #{if is_weekend, do: "weekend-cell"}"}>
+        <% is_current_user = @current_user && user.id == @current_user.id %>
+        <div class={"calendar-cell #{if mood, do: mood_display_class(mood.mood), else: "bg-gray-50 hover:bg-gray-100"} #{if is_weekend, do: "weekend-cell"} #{if is_current_user, do: "current-user-cell"}"}>
           <%= if mood do %>
             <div class="mood-content" title={"#{mood.mood} - #{mood.emojis}"}>
               <%= if is_weekend do %>
@@ -47,18 +51,20 @@
                 <span class="mood-emojis">{mood.emojis}</span>
               <% end %>
             </div>
-            <div class="mood-actions">
-              <.link patch={~p"/moods/#{mood}/edit"} class="edit-link">
-                ✏️
-              </.link>
-              <.link
-                phx-click={JS.push("delete", value: %{id: mood.id})}
-                data-confirm="Are you sure?"
-                class="delete-link"
-              >
-                🗑️
-              </.link>
-            </div>
+            <%= if is_current_user do %>
+              <div class="mood-actions">
+                <.link patch={~p"/moods/#{mood}/edit"} class="edit-link">
+                  ✏️
+                </.link>
+                <.link
+                  phx-click={JS.push("delete", value: %{id: mood.id})}
+                  data-confirm="Are you sure?"
+                  class="delete-link"
+                >
+                  🗑️
+                </.link>
+              </div>
+            <% end %>
           <% else %>
             <!-- this is the ugliest piece of 💩, but it works :vibe: -->
             <% date_string =
@@ -71,13 +77,17 @@
                 🌴
               </div>
             <% else %>
-              <.link
-                patch={new_mood_path}
-                class="add-mood-link"
-                title="Add mood for #{user.display_name} on #{day}/#{@current_month}"
-              >
-                +
-              </.link>
+              <%= if is_current_user do %>
+                <.link
+                  patch={new_mood_path}
+                  class="add-mood-link"
+                  title="Add mood for #{user.display_name} on #{day}/#{@current_month}"
+                >
+                  +
+                </.link>
+              <% else %>
+                <div class="empty-cell"></div>
+              <% end %>
             <% end %>
           <% end %>
         </div>
@@ -147,6 +157,12 @@
     min-height: 40px;
   }
 
+  .current-user-row {
+    background-color: #dbeafe !important;
+    border-right: 2px solid #3b82f6 !important;
+    font-weight: 600;
+  }
+
   .calendar-cell {
     /* background-color: white; */
     min-height: 40px;
@@ -157,6 +173,25 @@
     justify-content: center;
     align-items: center;
     transition: all 0.2s;
+  }
+
+  .current-user-cell {
+    border: 1px solid #3b82f6;
+  }
+
+  .current-user-cell:hover {
+    border: 2px solid #1d4ed8;
+    box-shadow: 0 0 0 1px #3b82f6;
+  }
+
+  .empty-cell {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #d1d5db;
+    font-size: 0.875rem;
   }
 
   .calendar-cell:hover {

@@ -57,10 +57,15 @@ defmodule NikoWeb.MoodLive.Index do
 
   def handle_event("delete", %{"id" => id}, socket) do
     mood = Moods.get_mood!(id)
-    {:ok, _} = Moods.delete_mood(mood)
 
-    socket = load_calendar_data(socket)
-    {:noreply, socket}
+    # Authorization check: only allow deleting own moods
+    if socket.assigns.current_user && mood.user_id == socket.assigns.current_user.id do
+      {:ok, _} = Moods.delete_mood(mood)
+      socket = load_calendar_data(socket)
+      {:noreply, put_flash(socket, :info, "Mood deleted successfully")}
+    else
+      {:noreply, put_flash(socket, :error, "You can only delete your own moods")}
+    end
   end
 
   @impl true
@@ -74,27 +79,51 @@ defmodule NikoWeb.MoodLive.Index do
   end
 
   defp apply_action(socket, :edit, %{"id" => id}) do
-    socket
-    |> assign(:page_title, "Edit Mood")
-    |> assign(:mood, Moods.get_mood!(id))
+    mood = Moods.get_mood!(id)
+
+    # Authorization check: only allow editing own moods
+    if socket.assigns.current_user && mood.user_id == socket.assigns.current_user.id do
+      socket
+      |> assign(:page_title, "Edit Mood")
+      |> assign(:mood, mood)
+    else
+      socket
+      |> put_flash(:error, "You can only edit your own moods")
+      |> push_patch(to: ~p"/moods")
+    end
   end
 
   defp apply_action(socket, :new, params) do
+    # Only allow creating moods for the current user
     user_id =
+      if socket.assigns.current_user do
+        socket.assigns.current_user.id
+      else
+        nil
+      end
+
+    # Verify the requested user_id matches current user
+    requested_user_id =
       case Map.get(params, "user_id") do
-        nil -> if socket.assigns.current_user, do: socket.assigns.current_user.id, else: nil
-        id -> String.to_integer(id)
+        nil -> user_id
+        id_string -> String.to_integer(id_string)
       end
 
-    date =
-      case Map.get(params, "date") do
-        nil -> Date.utc_today()
-        date_string -> Date.from_iso8601!(date_string)
-      end
+    if socket.assigns.current_user && requested_user_id == socket.assigns.current_user.id do
+      date =
+        case Map.get(params, "date") do
+          nil -> Date.utc_today()
+          date_string -> Date.from_iso8601!(date_string)
+        end
 
-    socket
-    |> assign(:page_title, "New Mood")
-    |> assign(:mood, %Mood{user_id: user_id, date: date})
+      socket
+      |> assign(:page_title, "New Mood")
+      |> assign(:mood, %Mood{user_id: user_id, date: date})
+    else
+      socket
+      |> put_flash(:error, "You can only create moods for yourself")
+      |> push_patch(to: ~p"/moods")
+    end
   end
 
   defp apply_action(socket, :index, _params) do

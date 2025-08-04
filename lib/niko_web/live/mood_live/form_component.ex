@@ -172,74 +172,83 @@ defmodule NikoWeb.MoodLive.FormComponent do
   end
 
   defp save_mood(socket, :edit, mood_params) do
-    # Clear mood for future dates
-    mood_params_processed =
-      if socket.assigns.future_date? do
-        Map.put(mood_params, "mood", nil)
-      else
-        mood_params
-      end
+    # Authorization check: ensure user can only edit their own moods
+    if socket.assigns.current_user &&
+         socket.assigns.mood.user_id == socket.assigns.current_user.id do
+      # Clear mood for future dates
+      mood_params_processed =
+        if socket.assigns.future_date? do
+          Map.put(mood_params, "mood", nil)
+        else
+          mood_params
+        end
 
-    # Ensure user_id is preserved during updates
-    mood_params_with_user =
-      if socket.assigns.current_user do
+      # Ensure user_id cannot be changed to someone else's ID
+      mood_params_with_user =
         Map.put(mood_params_processed, "user_id", socket.assigns.current_user.id)
-      else
-        mood_params_processed
+
+      case Moods.update_mood(socket.assigns.mood, mood_params_with_user) do
+        {:ok, mood} ->
+          notify_parent({:saved, mood})
+
+          success_message =
+            if socket.assigns.future_date?,
+              do: "Note saved successfully!",
+              else: "Mood updated successfully"
+
+          {:noreply,
+           socket
+           |> put_flash(:info, success_message)
+           |> push_patch(to: socket.assigns.patch)}
+
+        {:error, %Ecto.Changeset{} = changeset} ->
+          {:noreply, assign(socket, form: to_form(changeset))}
       end
-
-    case Moods.update_mood(socket.assigns.mood, mood_params_with_user) do
-      {:ok, mood} ->
-        notify_parent({:saved, mood})
-
-        success_message =
-          if socket.assigns.future_date?,
-            do: "Note saved successfully!",
-            else: "Mood updated successfully"
-
-        {:noreply,
-         socket
-         |> put_flash(:info, success_message)
-         |> push_patch(to: socket.assigns.patch)}
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign(socket, form: to_form(changeset))}
+    else
+      {:noreply,
+       socket
+       |> put_flash(:error, "You can only edit your own moods")
+       |> push_patch(to: socket.assigns.patch)}
     end
   end
 
   defp save_mood(socket, :new, mood_params) do
-    # Clear mood for future dates
-    mood_params_processed =
-      if socket.assigns.future_date? do
-        Map.put(mood_params, "mood", nil)
-      else
-        mood_params
-      end
+    # Authorization check: ensure user can only create moods for themselves
+    if socket.assigns.current_user do
+      # Clear mood for future dates
+      mood_params_processed =
+        if socket.assigns.future_date? do
+          Map.put(mood_params, "mood", nil)
+        else
+          mood_params
+        end
 
-    # Ensure user_id is included for new moods
-    mood_params_with_user =
-      if socket.assigns.current_user do
+      # Ensure user_id is locked to current user
+      mood_params_with_user =
         Map.put(mood_params_processed, "user_id", socket.assigns.current_user.id)
-      else
-        mood_params_processed
+
+      case Moods.create_mood(mood_params_with_user) do
+        {:ok, mood} ->
+          notify_parent({:saved, mood})
+
+          success_message =
+            if socket.assigns.future_date?,
+              do: "Note created successfully!",
+              else: "Mood created successfully"
+
+          {:noreply,
+           socket
+           |> put_flash(:info, success_message)
+           |> push_patch(to: socket.assigns.patch)}
+
+        {:error, %Ecto.Changeset{} = changeset} ->
+          {:noreply, assign(socket, form: to_form(changeset))}
       end
-
-    case Moods.create_mood(mood_params_with_user) do
-      {:ok, mood} ->
-        notify_parent({:saved, mood})
-
-        success_message =
-          if socket.assigns.future_date?,
-            do: "Note created successfully!",
-            else: "Mood created successfully"
-
-        {:noreply,
-         socket
-         |> put_flash(:info, success_message)
-         |> push_patch(to: socket.assigns.patch)}
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign(socket, form: to_form(changeset))}
+    else
+      {:noreply,
+       socket
+       |> put_flash(:error, "You must be logged in to create moods")
+       |> push_patch(to: socket.assigns.patch)}
     end
   end
 
