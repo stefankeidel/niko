@@ -5,7 +5,7 @@ defmodule NikoWeb.MoodLiveTest do
   import Niko.MoodsFixtures
 
   @create_attrs %{date: "2025-08-03", mood: :horrible, emojis: "some emojis"}
-  @update_attrs %{date: "2025-08-04", mood: :"not-good", emojis: "some updated emojis"}
+  @update_attrs %{date: "2025-08-04", mood: :not_good, emojis: "some updated emojis"}
   @invalid_attrs %{date: nil, mood: nil, emojis: nil}
 
   defp create_mood(_) do

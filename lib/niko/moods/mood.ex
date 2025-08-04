@@ -4,7 +4,7 @@ defmodule Niko.Moods.Mood do
 
   schema "moods" do
     field :date, :date
-    field :mood, Ecto.Enum, values: [:horrible, :"not-good", :good, :awesome]
+    field :mood, Ecto.Enum, values: [:horrible, :not_good, :good, :awesome]
     field :emojis, :string
     field :user_id, :id
 

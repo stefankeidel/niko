@@ -190,7 +190,7 @@ defmodule NikoWeb.MoodLive.Index do
   # Helper function to get mood display info
   def mood_display_class(:awesome), do: "bg-green-500 text-white"
   def mood_display_class(:good), do: "bg-yellow-500 text-white"
-  def mood_display_class(:"not-good"), do: "bg-orange-500 text-white"
+  def mood_display_class(:not_good), do: "bg-orange-500 text-white"
   def mood_display_class(:horrible), do: "bg-red-500 text-white"
   def mood_display_class(_), do: "bg-gray-100 text-gray-500"
 end
