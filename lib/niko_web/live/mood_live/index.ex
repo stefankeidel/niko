@@ -5,12 +5,22 @@ defmodule NikoWeb.MoodLive.Index do
   alias Niko.Moods.Mood
 
   @impl true
-  def mount(_params, _session, socket) do
-    # Subscribe to user selection changes for real-time updates
-    if connected?(socket) do
-      Phoenix.PubSub.subscribe(Niko.PubSub, "user_selection")
-    end
+  def mount(_params, session, socket) do
+    # Get current user from session
+    current_user =
+      case Map.get(session, "selected_user_id") do
+        nil ->
+          nil
 
+        user_id ->
+          try do
+            Niko.Accounts.get_user!(user_id)
+          rescue
+            Ecto.NoResultsError -> nil
+          end
+      end
+
+    socket = assign(socket, :current_user, current_user)
     {:ok, stream(socket, :moods, Moods.list_moods())}
   end
 
@@ -26,9 +36,11 @@ defmodule NikoWeb.MoodLive.Index do
   end
 
   defp apply_action(socket, :new, _params) do
+    user_id = if socket.assigns.current_user, do: socket.assigns.current_user.id, else: nil
+
     socket
     |> assign(:page_title, "New Mood")
-    |> assign(:mood, %Mood{})
+    |> assign(:mood, %Mood{user_id: user_id})
   end
 
   defp apply_action(socket, :index, _params) do

@@ -57,7 +57,15 @@ defmodule NikoWeb.MoodLive.FormComponent do
   end
 
   defp save_mood(socket, :edit, mood_params) do
-    case Moods.update_mood(socket.assigns.mood, mood_params) do
+    # Ensure user_id is preserved during updates
+    mood_params_with_user =
+      if socket.assigns.current_user do
+        Map.put(mood_params, "user_id", socket.assigns.current_user.id)
+      else
+        mood_params
+      end
+
+    case Moods.update_mood(socket.assigns.mood, mood_params_with_user) do
       {:ok, mood} ->
         notify_parent({:saved, mood})
 
@@ -72,7 +80,15 @@ defmodule NikoWeb.MoodLive.FormComponent do
   end
 
   defp save_mood(socket, :new, mood_params) do
-    case Moods.create_mood(mood_params) do
+    # Ensure user_id is included for new moods
+    mood_params_with_user =
+      if socket.assigns.current_user do
+        Map.put(mood_params, "user_id", socket.assigns.current_user.id)
+      else
+        mood_params
+      end
+
+    case Moods.create_mood(mood_params_with_user) do
       {:ok, mood} ->
         notify_parent({:saved, mood})
 
