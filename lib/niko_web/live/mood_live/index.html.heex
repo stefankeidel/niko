@@ -1,27 +1,224 @@
 <.header>
+  {@month_name} {@current_year}
   <:actions>
+    <.button phx-click="navigate_month" phx-value-direction="prev" type="button">
+      ← Previous
+    </.button>
+    <.button phx-click="navigate_month" phx-value-direction="next" type="button">
+      Next →
+    </.button>
     <.link patch={~p"/moods/new"}>
       <.button>New Mood</.button>
     </.link>
   </:actions>
 </.header>
 
-<.table id="moods" rows={@streams.moods}>
-  <:col :let={{_id, mood}} label="Date">{mood.date}</:col>
-  <:col :let={{_id, mood}} label="Mood">{mood.mood}</:col>
-  <:col :let={{_id, mood}} label="Emojis">{mood.emojis}</:col>
-  <:action :let={{_id, mood}}>
-    <.link patch={~p"/moods/#{mood}/edit"}>Edit</.link>
-  </:action>
-  <:action :let={{id, mood}}>
-    <.link
-      phx-click={JS.push("delete", value: %{id: mood.id}) |> hide("##{id}")}
-      data-confirm="Are you sure?"
-    >
-      Delete
-    </.link>
-  </:action>
-</.table>
+<!-- Calendar Grid -->
+<div class="calendar-container mt-12">
+  <!-- Calendar Header with Days -->
+  <div class="calendar-grid">
+    <!-- Top-left corner cell (empty) -->
+    <div class="calendar-header-corner">
+      User
+    </div>
+    
+<!-- Day headers -->
+    <%= for day <- 1..@days_in_month do %>
+      <div class={"calendar-day-header #{if @today.year == @current_year and @today.month == @current_month and @today.day == day, do: "today"}"}>
+        {day}
+      </div>
+    <% end %>
+    
+<!-- User rows -->
+    <%= for user <- @users do %>
+      <!-- User name cell -->
+      <div class="calendar-user-name">
+        {user.display_name}
+      </div>
+      
+<!-- Mood cells for each day -->
+      <%= for day <- 1..@days_in_month do %>
+        <% mood = get_in(@calendar_data, [user.id, day]) %>
+        <div class={"calendar-cell #{if mood, do: mood_display_class(mood.mood), else: "bg-gray-50 hover:bg-gray-100"}"}>
+          <%= if mood do %>
+            <div class="mood-content" title={"#{mood.mood} - #{mood.emojis}"}>
+              <span class="mood-emoji">{mood_display_emoji(mood.mood)}</span>
+              <span class="mood-emojis text-xs">{mood.emojis}</span>
+            </div>
+            <div class="mood-actions">
+              <.link patch={~p"/moods/#{mood}/edit"} class="edit-link">
+                ✏️
+              </.link>
+              <.link
+                phx-click={JS.push("delete", value: %{id: mood.id})}
+                data-confirm="Are you sure?"
+                class="delete-link"
+              >
+                🗑️
+              </.link>
+            </div>
+          <% else %>
+            <% date_string =
+              "#{@current_year}-#{String.pad_leading("#{@current_month}", 2, "0")}-#{String.pad_leading("#{day}", 2, "0")}"
+
+            new_mood_path = ~p"/moods/new?user_id=#{user.id}&date=#{date_string}" %>
+            <.link
+              patch={new_mood_path}
+              class="add-mood-link"
+              title="Add mood for #{user.display_name} on #{day}/#{@current_month}"
+            >
+              +
+            </.link>
+          <% end %>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+</div>
+
+<style>
+  .calendar-container {
+    overflow-x: auto;
+  }
+
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: 200px repeat(var(--days-count), 60px);
+    gap: 1px;
+    background-color: #e5e7eb;
+    border: 1px solid #e5e7eb;
+  }
+
+  .calendar-header-corner {
+    background-color: #f9fafb;
+    padding: 8px;
+    font-weight: 600;
+    text-align: center;
+    border-right: 2px solid #d1d5db;
+    border-bottom: 2px solid #d1d5db;
+  }
+
+  .calendar-day-header {
+    background-color: #f3f4f6;
+    padding: 8px 4px;
+    text-align: center;
+    font-weight: 500;
+    font-size: 0.875rem;
+    border-bottom: 2px solid #d1d5db;
+  }
+
+  .calendar-day-header.today {
+    background-color: #dbeafe;
+    color: #1e40af;
+    font-weight: 700;
+  }
+
+  .calendar-user-name {
+    background-color: #f9fafb;
+    padding: 8px;
+    font-weight: 500;
+    border-right: 2px solid #d1d5db;
+    display: flex;
+    align-items: center;
+    min-height: 50px;
+  }
+
+  .calendar-cell {
+    background-color: white;
+    min-height: 50px;
+    padding: 4px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .calendar-cell:hover {
+    transform: scale(1.02);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  .mood-content {
+    text-align: center;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .mood-emoji {
+    font-size: 1.2rem;
+    margin-bottom: 2px;
+  }
+
+  .mood-emojis {
+    font-size: 0.75rem;
+    opacity: 0.8;
+  }
+
+  .mood-actions {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    display: none;
+    gap: 2px;
+  }
+
+  .calendar-cell:hover .mood-actions {
+    display: flex;
+  }
+
+  .edit-link, .delete-link {
+    font-size: 0.75rem;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+  }
+
+  .edit-link:hover, .delete-link:hover {
+    opacity: 1;
+  }
+
+  .add-mood-link {
+    font-size: 1.5rem;
+    color: #9ca3af;
+    transition: color 0.2s;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .add-mood-link:hover {
+    color: #4b5563;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .calendar-grid {
+      grid-template-columns: 150px repeat(var(--days-count), 45px);
+    }
+
+    .calendar-cell {
+      min-height: 45px;
+      font-size: 0.75rem;
+    }
+
+    .calendar-user-name {
+      font-size: 0.875rem;
+      padding: 6px;
+    }
+  }
+</style>
+
+<script>
+  // Set CSS custom property for days count
+  document.documentElement.style.setProperty('--days-count', '<%= @days_in_month %>');
+</script>
 
 <.modal :if={@live_action in [:new, :edit]} id="mood-modal" show on_cancel={JS.patch(~p"/moods")}>
   <.live_component
