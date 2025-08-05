@@ -108,24 +108,6 @@ defmodule NikoWeb.MoodLive.FormComponent do
           </.button>
         </:actions>
       </.simple_form>
-
-      <script>
-        window.insertEmoji = function(emoji) {
-          const input = document.getElementById('emojis-input');
-          if (input) {
-            const currentValue = input.value || '';
-            const newValue = currentValue + emoji;
-            input.value = newValue;
-
-            // Trigger input event to notify LiveView of the change
-            const event = new Event('input', { bubbles: true });
-            input.dispatchEvent(event);
-
-            // Focus the input field after insertion
-            input.focus();
-          }
-        };
-      </script>
     </div>
     """
   end
