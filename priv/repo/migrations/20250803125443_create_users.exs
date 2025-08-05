@@ -5,6 +5,7 @@ defmodule Niko.Repo.Migrations.CreateUsers do
     create table(:users) do
       add :display_name, :string
       add :email, :string
+      add :groups, {:array, :string}, default: []
 
       timestamps(type: :utc_datetime)
     end

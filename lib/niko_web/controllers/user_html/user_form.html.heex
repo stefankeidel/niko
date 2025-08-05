@@ -4,6 +4,14 @@
   </.error>
   <.input field={f[:display_name]} type="text" label="Display name" />
   <.input field={f[:email]} type="text" label="Email" />
+  <.input
+    field={f[:groups]}
+    type="select"
+    multiple
+    label="Groups"
+    options={Niko.Groups.group_options()}
+    value={Ecto.Changeset.get_field(@changeset, :groups, [])}
+  />
   <:actions>
     <.button>Save User</.button>
   </:actions>

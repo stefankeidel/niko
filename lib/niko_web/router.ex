@@ -20,12 +20,7 @@ defmodule NikoWeb.Router do
 
     get "/", PageController, :home
     post "/", PageController, :select_user
-    resources "/groups", GroupController
-
-    resources "/users", UserController do
-      post "/groups/add", UserController, :add_group
-      delete "/groups/:group_id", UserController, :remove_group
-    end
+    resources "/users", UserController
 
     live "/moods", MoodLive.Index, :index
     live "/moods/new", MoodLive.Index, :new

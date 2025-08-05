@@ -5,8 +5,7 @@ defmodule Niko.Accounts.User do
   schema "users" do
     field :display_name, :string
     field :email, :string
-
-    many_to_many :groups, Niko.Groups.Group, join_through: "users_groups", on_replace: :delete
+    field :groups, {:array, :string}, default: []
 
     timestamps(type: :utc_datetime)
   end
@@ -14,25 +13,27 @@ defmodule Niko.Accounts.User do
   @doc false
   def changeset(user, attrs) do
     user
-    |> cast(attrs, [:display_name, :email])
+    |> cast(attrs, [:display_name, :email, :groups])
     |> validate_required([:display_name, :email])
     |> validate_length(:display_name, min: 1, max: 100)
     |> validate_format(:email, ~r/^[^\s]+@[^\s]+\.[^\s]+$/,
       message: "must be a valid email address"
     )
     |> unique_constraint(:email)
+    |> validate_groups()
   end
 
-  @doc false
-  def changeset_with_groups(user, attrs) do
-    user
-    |> cast(attrs, [:display_name, :email])
-    |> validate_required([:display_name, :email])
-    |> validate_length(:display_name, min: 1, max: 100)
-    |> validate_format(:email, ~r/^[^\s]+@[^\s]+\.[^\s]+$/,
-      message: "must be a valid email address"
-    )
-    |> unique_constraint(:email)
-    |> cast_assoc(:groups)
+  defp validate_groups(changeset) do
+    case get_change(changeset, :groups) do
+      nil -> changeset
+      groups ->
+        case Niko.Groups.validate_groups(groups) do
+          {:ok, _} -> changeset
+          {:error, invalid_groups} when is_list(invalid_groups) ->
+            add_error(changeset, :groups, "contains invalid groups: #{Enum.join(invalid_groups, ", ")}")
+          {:error, message} ->
+            add_error(changeset, :groups, message)
+        end
+    end
   end
 end

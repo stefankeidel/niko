@@ -1,13 +1,7 @@
 <.header>
-  Edit User {@user.id}
-  <:subtitle>Use this form to manage user records in your database.</:subtitle>
+  Edit Profile
 </.header>
 
 <.user_form changeset={@changeset} action={~p"/users/#{@user}"} />
-
-<.link navigate={~p"/users/#{@user}"}
-  class="mt-4 inline-flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-md">
-  Manage Groups
-</.link>
 
 <.back navigate={~p"/users"}>Back to users</.back>

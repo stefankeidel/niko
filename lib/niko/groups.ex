@@ -1,170 +1,92 @@
 defmodule Niko.Groups do
   @moduledoc """
-  The Groups context.
+  The Groups context with hardcoded group slugs.
   """
 
-  import Ecto.Query, warn: false
-  alias Niko.Repo
-
-  alias Niko.Groups.Group
+  @groups [
+    "data_platform","b2c","pricing"
+  ]
 
   @doc """
-  Returns the list of groups.
+  Returns the list of available group slugs.
 
   ## Examples
 
       iex> list_groups()
-      [%Group{}, ...]
+      ["engineering", "design", "marketing", "management", "sales", "support"]
 
   """
   def list_groups do
-    Repo.all(Group)
+    @groups
   end
 
   @doc """
-  Gets a single group.
-
-  Raises `Ecto.NoResultsError` if the Group does not exist.
+  Returns the list of groups as options for forms.
 
   ## Examples
 
-      iex> get_group!(123)
-      %Group{}
-
-      iex> get_group!(456)
-      ** (Ecto.NoResultsError)
+      iex> group_options()
+      [{"Engineering", "engineering"}, {"Design", "design"}, ...]
 
   """
-  def get_group!(id), do: Repo.get!(Group, id)
-
-  @doc """
-  Creates a group.
-
-  ## Examples
-
-      iex> create_group(%{field: value})
-      {:ok, %Group{}}
-
-      iex> create_group(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def create_group(attrs \\ %{}) do
-    %Group{}
-    |> Group.changeset(attrs)
-    |> Repo.insert()
+  def group_options do
+    @groups
+    |> Enum.map(fn slug ->
+      {humanize_group(slug), slug}
+    end)
   end
 
   @doc """
-  Updates a group.
+  Checks if a group slug is valid.
 
   ## Examples
 
-      iex> update_group(group, %{field: new_value})
-      {:ok, %Group{}}
+      iex> valid_group?("engineering")
+      true
 
-      iex> update_group(group, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
+      iex> valid_group?("invalid")
+      false
 
   """
-  def update_group(%Group{} = group, attrs) do
-    group
-    |> Group.changeset(attrs)
-    |> Repo.update()
+  def valid_group?(slug) do
+    slug in @groups
   end
 
   @doc """
-  Deletes a group.
+  Humanizes a group slug for display.
 
   ## Examples
 
-      iex> delete_group(group)
-      {:ok, %Group{}}
-
-      iex> delete_group(group)
-      {:error, %Ecto.Changeset{}}
+      iex> humanize_group("engineering")
+      "Engineering"
 
   """
-  def delete_group(%Group{} = group) do
-    Repo.delete(group)
+  def humanize_group(slug) do
+    slug
+    |> String.capitalize()
   end
 
   @doc """
-  Returns an `%Ecto.Changeset{}` for tracking group changes.
+  Validates a list of group slugs.
 
   ## Examples
 
-      iex> change_group(group)
-      %Ecto.Changeset{data: %Group{}}
+      iex> validate_groups(["engineering", "design"])
+      {:ok, ["engineering", "design"]}
+
+      iex> validate_groups(["engineering", "invalid"])
+      {:error, ["invalid"]}
 
   """
-  def change_group(%Group{} = group, attrs \\ %{}) do
-    Group.changeset(group, attrs)
+  def validate_groups(groups) when is_list(groups) do
+    invalid_groups = Enum.reject(groups, &valid_group?/1)
+
+    if Enum.empty?(invalid_groups) do
+      {:ok, groups}
+    else
+      {:error, invalid_groups}
+    end
   end
 
-  @doc """
-  Gets a group with preloaded users.
-
-  ## Examples
-
-      iex> get_group_with_users!(123)
-      %Group{users: [%User{}, ...]}
-
-  """
-  def get_group_with_users!(id) do
-    Group
-    |> Repo.get!(id)
-    |> Repo.preload(:users)
-  end
-
-  @doc """
-  Lists all users in a group.
-
-  ## Examples
-
-      iex> list_group_users(group)
-      [%User{}, ...]
-
-  """
-  def list_group_users(%Group{} = group) do
-    group
-    |> Repo.preload(:users)
-    |> Map.get(:users)
-  end
-
-  @doc """
-  Adds a user to a group.
-
-  ## Examples
-
-      iex> add_group_member(group, user)
-      {:ok, %Group{}}
-
-  """
-  def add_group_member(%Group{} = group, %Niko.Accounts.User{} = user) do
-    group
-    |> Repo.preload(:users)
-    |> Ecto.Changeset.change()
-    |> Ecto.Changeset.put_assoc(:users, [user | group.users])
-    |> Repo.update()
-  end
-
-  @doc """
-  Removes a user from a group.
-
-  ## Examples
-
-      iex> remove_group_member(group, user)
-      {:ok, %Group{}}
-
-  """
-  def remove_group_member(%Group{} = group, %Niko.Accounts.User{} = user) do
-    group = Repo.preload(group, :users)
-    updated_users = Enum.reject(group.users, &(&1.id == user.id))
-
-    group
-    |> Ecto.Changeset.change()
-    |> Ecto.Changeset.put_assoc(:users, updated_users)
-    |> Repo.update()
-  end
+  def validate_groups(_), do: {:error, "Groups must be a list"}
 end
