@@ -15,7 +15,8 @@ defmodule NikoWeb.MicrosoftAuthController do
     IO.inspect(token, label: "Token received from Microsoft")
     IO.inspect(get_session(conn), label: "Session")
 
-    # remove key access token from token
+    # remove key access token from token, otherwise the cookie gets too big
+    # not sure if this will work, but we'll see. for now the cookies are stored
     token = Map.drop(token, [:id_token])
 
     conn

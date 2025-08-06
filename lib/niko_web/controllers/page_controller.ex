@@ -18,34 +18,6 @@ defmodule NikoWeb.PageController do
     )
   end
 
-  def select_user(conn, %{"user_id" => user_id}) when user_id != "" do
-    user = Accounts.get_user!(user_id)
-
-    # Broadcast user selection to all LiveViews
-    Phoenix.PubSub.broadcast(Niko.PubSub, "user_selection", {:user_selected, user})
-
-    conn
-    |> put_session(:selected_user_id, user.id)
-    |> put_flash(:info, "Selected user: #{user.display_name}")
-    |> redirect(to: ~p"/")
-  end
-
-  def select_user(conn, %{"user_id" => ""}) do
-    # Broadcast user deselection to all LiveViews
-    Phoenix.PubSub.broadcast(Niko.PubSub, "user_selection", {:user_deselected})
-
-    conn
-    |> delete_session(:selected_user_id)
-    |> put_flash(:info, "User selection cleared")
-    |> redirect(to: ~p"/")
-  end
-
-  def select_user(conn, _params) do
-    conn
-    |> put_flash(:error, "Please select a user")
-    |> redirect(to: ~p"/")
-  end
-
   def welcome(conn, _params) do
     # Check if there's a session token
     case conn |> get_session(:token) do
