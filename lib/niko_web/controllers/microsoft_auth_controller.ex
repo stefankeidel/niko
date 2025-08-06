@@ -31,7 +31,7 @@ defmodule NikoWeb.MicrosoftAuthController do
         conn
         |> put_session(:token, token)
         |> put_session(:selected_user_id, user.id)
-        |> redirect(to: "/welcome")
+        |> redirect(to: "/moods")
 
       {:error, _changeset} ->
         # Handle error case - for now just redirect with error
