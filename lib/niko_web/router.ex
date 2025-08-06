@@ -19,7 +19,7 @@ defmodule NikoWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
-    post "/", PageController, :select_user
+    post "/logout", PageController, :logout
     resources "/users", UserController
 
     live "/moods", MoodLive.Index, :index

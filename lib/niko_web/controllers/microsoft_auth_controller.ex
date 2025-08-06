@@ -17,6 +17,17 @@ defmodule NikoWeb.MicrosoftAuthController do
     # Get user profile from Microsoft
     {:ok, profile} = ElixirAuthMicrosoft.get_user_profile(token.access_token)
 
+    # error out if principalName contains '_dev'
+    if String.contains?(profile.userPrincipalName, "_dev") do
+      conn
+      |> put_flash(
+        :error,
+        "Development accounts are not allowed. Use your office account instead."
+      )
+      |> redirect(to: "/")
+      |> halt()
+    end
+
     # Find or create user in our database
     user_attrs = %{
       email: profile.userPrincipalName,
