@@ -38,6 +38,40 @@ defmodule Niko.Accounts do
   def get_user!(id), do: Repo.get!(User, id)
 
   @doc """
+  Gets a user by email.
+
+  Returns `nil` if the User does not exist.
+
+  ## Examples
+
+      iex> get_user_by_email("user@example.com")
+      %User{}
+
+      iex> get_user_by_email("nonexistent@example.com")
+      nil
+
+  """
+  def get_user_by_email(email) do
+    Repo.get_by(User, email: email)
+  end
+
+  @doc """
+  Finds an existing user by email or creates a new one with the given attributes.
+
+  ## Examples
+
+      iex> find_or_create_user_by_email(%{email: "user@example.com", display_name: "User"})
+      {:ok, %User{}}
+
+  """
+  def find_or_create_user_by_email(%{email: email} = attrs) do
+    case get_user_by_email(email) do
+      %User{} = user -> {:ok, user}
+      nil -> create_user(attrs)
+    end
+  end
+
+  @doc """
   Creates a user.
 
   ## Examples
