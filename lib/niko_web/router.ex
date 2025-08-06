@@ -25,6 +25,10 @@ defmodule NikoWeb.Router do
     live "/moods", MoodLive.Index, :index
     live "/moods/new", MoodLive.Index, :new
     live "/moods/:id/edit", MoodLive.Index, :edit
+
+    # sso related stuff, the callback and our welcome action
+    get "/auth/microsoft/callback", MicrosoftAuthController, :index
+    get "/welcome", PageController, :welcome
   end
 
   # Other scopes may use custom stacks.

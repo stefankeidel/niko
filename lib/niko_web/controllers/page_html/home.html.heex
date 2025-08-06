@@ -1,6 +1,9 @@
 <.flash_group flash={@flash} />
 
 <div class="max-w-2xl mx-auto mt-8 p-6 bg-white rounded-lg shadow-md">
+  <a href={@oauth_microsoft_url}>
+    <img src="https://learn.microsoft.com/en-us/azure/active-directory/develop/media/howto-add-branding-in-azure-ad-apps/ms-symbollockup_signin_light.png" alt="Sign in with Microsoft" />
+  </a>
   <%= if @selected_user do %>
     <div class="mb-6">
       <h2 class="text-2xl font-bold text-gray-900 mb-4">Welcome, <%= @selected_user.display_name %>!</h2>
