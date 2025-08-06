@@ -28,7 +28,6 @@ defmodule NikoWeb.Router do
 
     # sso related stuff, the callback and our welcome action
     get "/auth/microsoft/callback", MicrosoftAuthController, :index
-    get "/welcome", PageController, :welcome
   end
 
   # Other scopes may use custom stacks.
